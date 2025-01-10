@@ -37,13 +37,11 @@ M.setup = function(user_config)
   print(state.config.icon .. " I18n plugin initialized with render mode: " .. state.config.render)
 end
 
-
-  vim.api.nvim_create_user_command("I18nClear", function()
-    renderer.clear_virtual_text()
-  end, {
-    nargs = 0,
-    desc = "Clear rendered virtual text",
-  })
-end
+vim.api.nvim_create_user_command("I18nClear", function()
+  renderer.clear_virtual_text()
+end, {
+  nargs = 0,
+  desc = "Clear rendered virtual text",
+})
 
 return M
