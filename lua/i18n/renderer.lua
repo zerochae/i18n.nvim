@@ -1,18 +1,13 @@
-local parser = require "i18n.parser"
 local locale = require "i18n.locale"
+local parser = require "i18n.parser"
 local state = require "i18n.state"
 
 local M = {}
 
-M.replace_i18n_keys = function(lang)
+M.replace_i18n_keys = function(lang, tags)
   local bufnr = vim.api.nvim_get_current_buf()
-  local path = state.get_path()
+  local translations = locale.load_locale(lang or state.config.default_lang, tags)
 
-  if not path then
-    return
-  end
-
-  local translations = locale.load_locale(lang or state.config.default_lang, path)
   if not translations then
     print(state.config.icon .. " Translations for language not loaded: " .. (lang or state.config.default_lang))
     return
