@@ -26,7 +26,7 @@ M.load_locale = function(lang, tags)
     return nil
   end
 
-  tags = tags or { "common" }
+  tags = tags or state.get_tag()
   if #tags == 0 then
     tags = { "common" }
   end

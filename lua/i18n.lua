@@ -16,12 +16,27 @@ M.setup = function(user_config)
       tags = { "common" }
     end
 
-    local lang = state.config.default_lang
+    local lang = state.get_lang()
     renderer.render(lang, tags)
   end, {
     nargs = "*",
     desc = "Render i18n keys using the selected render mode",
   })
+
+  if state.config.auto_enable then
+    vim.api.nvim_create_autocmd("BufReadPost", {
+      pattern = "*",
+      callback = function()
+        local lang = state.get_lang()
+        renderer.render(lang, state.get_tag())
+      end,
+      desc = "Automatically enable i18n rendering",
+    })
+  end
+
+  print(state.config.icon .. " I18n plugin initialized with render mode: " .. state.config.render)
+end
+
 
   vim.api.nvim_create_user_command("I18nClear", function()
     renderer.clear_virtual_text()
