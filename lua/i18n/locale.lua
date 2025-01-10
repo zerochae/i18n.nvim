@@ -2,13 +2,10 @@ local Path = require "plenary.path"
 local state = require "i18n.state"
 local M = {}
 
--- 특정 언어(lang)와 태그(tag name)의 JSON 파일 로드
-local function load_file(base_path, lang, tag)
-  local file_path = base_path .. "/" .. lang .. "/" .. tag .. ".json"
+local function load_file(file_path)
   local file = Path:new(file_path)
 
   if not file:exists() then
-    print("Locale file not found: " .. file_path)
     return nil
   end
 
@@ -22,7 +19,6 @@ local function load_file(base_path, lang, tag)
   return data
 end
 
--- 특정 언어(lang)와 태그 목록(tags)을 기반으로 데이터를 병합
 M.load_locale = function(lang, tags)
   local base_path = state.get_path()
   if not base_path then
@@ -30,14 +26,23 @@ M.load_locale = function(lang, tags)
     return nil
   end
 
+  tags = tags or { "common" }
+  if #tags == 0 then
+    tags = { "common" }
+  end
+
   local merged_data = {}
 
   for _, tag in ipairs(tags) do
-    local data = load_file(base_path, lang, tag)
+    local file_path = string.format("%s/%s/%s.json", base_path, lang, tag)
+
+    local data = load_file(file_path)
     if data then
       for key, value in pairs(data) do
         merged_data[key] = value
       end
+    else
+      print("Locale file not found or failed to load: " .. file_path)
     end
   end
 

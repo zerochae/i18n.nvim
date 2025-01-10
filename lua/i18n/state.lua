@@ -1,9 +1,13 @@
 local M = {}
 
-M.config = {}
+M.config = {
+  render = "virtual_text",
+  default_lang = "en",
+  locale_path = {},
+}
 
 M.setup = function(user_config)
-  M.config = user_config or {}
+  M.config = vim.tbl_deep_extend("force", M.config, user_config or {})
 end
 
 local function get_root_folder_name()
@@ -24,7 +28,7 @@ M.get_path = function()
     return nil
   end
 
-  return path
+  return string.gsub(path, "/$", "")
 end
 
 return M
