@@ -24,6 +24,14 @@ M.defaults = {
     toggle = "<leader>it",
     next_key = "]t",
     prev_key = "[t",
+    hover = "<leader>ih",
+  },
+  hover = {
+    enabled = true,
+    auto_show = false,
+    delay = 500,
+    max_width = 80,
+    max_height = 20,
   },
 }
 

@@ -4,11 +4,13 @@ M.config = require("i18n.core.config")
 M.loader = require("i18n.core.loader")
 M.treesitter = require("i18n.finder.treesitter")
 M.virtual_text = require("i18n.renderer.virtual_text")
+M.hover = require("i18n.ui.hover")
 
 M.setup = function(opts)
   M.config.setup(opts or {})
   
   M.virtual_text.setup_autocommands()
+  M.hover.setup_autocommands()
   
   M.setup_commands()
   M.setup_keymaps()
@@ -56,13 +58,19 @@ M.setup_commands = function()
     end
   })
   
+  vim.api.nvim_create_user_command("I18nHover", function()
+    M.hover.toggle_hover()
+  end, { desc = "Toggle i18n hover window" })
+  
   vim.api.nvim_create_user_command("I18nInfo", function()
     local info = M.loader.get_project_info()
     local current_locale = M.config.get().default_locale
     local is_enabled = M.virtual_text.is_enabled()
+    local is_hover_enabled = M.config.get().hover.enabled
     
     print("i18n.nvim Status:")
-    print("  Enabled: " .. (is_enabled and "Yes" or "No"))
+    print("  Virtual text: " .. (is_enabled and "Yes" or "No"))
+    print("  Hover: " .. (is_hover_enabled and "Yes" or "No"))
     print("  Current locale: " .. current_locale)
     print("  Project root: " .. (info.root or "Not found"))
     print("  Locales directory: " .. (info.locales_dir or "Not found"))
@@ -89,6 +97,12 @@ M.setup_keymaps = function()
     vim.keymap.set("n", cfg.keymaps.prev_key, function()
       M.goto_prev_key()
     end, { desc = "Go to previous i18n key" })
+  end
+  
+  if cfg.keymaps.hover then
+    vim.keymap.set("n", cfg.keymaps.hover, function()
+      M.hover.toggle_hover()
+    end, { desc = "Toggle i18n hover" })
   end
 end
 
@@ -164,6 +178,14 @@ end
 
 M.get_translation = function(key, locale)
   return M.loader.get_translation(key, locale)
+end
+
+M.show_hover = function()
+  return M.hover.show_hover()
+end
+
+M.hide_hover = function()
+  M.hover.hide_hover()
 end
 
 return M
