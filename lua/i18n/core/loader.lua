@@ -22,22 +22,66 @@ end
 local function find_locales_dir()
   local root = find_project_root()
   local cfg = config.get()
-  local possible_paths = {
-    root .. "/" .. cfg.locales_dir,
-    root .. "/locales",
-    root .. "/locale",
-    root .. "/lang",
-    root .. "/i18n",
-    root .. "/src/locales",
-    root .. "/src/locale",
-    root .. "/src/lang",
-    root .. "/src/i18n",
-    root .. "/public/locales",
+  
+  -- Try configured path first
+  local configured_path = root .. "/" .. cfg.locales_dir
+  if vim.fn.isdirectory(configured_path) == 1 then
+    return configured_path
+  end
+  
+  -- Search patterns for common locale directory structures
+  local search_patterns = {
+    "locales",
+    "locale", 
+    "lang",
+    "i18n",
+    "translations",
+    "src/locales",
+    "src/locale",
+    "src/lang", 
+    "src/i18n",
+    "src/translations",
+    "public/locales",
+    "assets/locales",
   }
   
-  for _, path in ipairs(possible_paths) do
+  -- First pass: direct directory search
+  for _, pattern in ipairs(search_patterns) do
+    local path = root .. "/" .. pattern
     if vim.fn.isdirectory(path) == 1 then
       return path
+    end
+  end
+  
+  -- Second pass: find directories containing locale files
+  local common_locales = {"en", "ko", "ja", "zh", "fr", "de", "es"}
+  local json_files = vim.fn.globpath(root, "**/*.json", false, true)
+  
+  for _, file in ipairs(json_files) do
+    local filename = vim.fn.fnamemodify(file, ":t:r")
+    local dir = vim.fn.fnamemodify(file, ":h")
+    
+    -- Check if filename matches common locale pattern
+    for _, locale in ipairs(common_locales) do
+      if filename == locale then
+        -- Verify other locale files exist in same directory
+        local locale_count = 0
+        local dir_files = vim.fn.globpath(dir, "*.json", false, true)
+        for _, dir_file in ipairs(dir_files) do
+          local dir_filename = vim.fn.fnamemodify(dir_file, ":t:r")
+          for _, check_locale in ipairs(common_locales) do
+            if dir_filename == check_locale then
+              locale_count = locale_count + 1
+              break
+            end
+          end
+        end
+        
+        -- If multiple locale files found, this is likely the locales directory
+        if locale_count >= 2 then
+          return dir
+        end
+      end
     end
   end
   
